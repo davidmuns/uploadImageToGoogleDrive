@@ -12,13 +12,14 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 @RestController
+@RequestMapping("/api/files")
 public class Controller {
 
     @Autowired
     private Service service;
 
-    @PostMapping("/uploadToGoogleDrive")
-    public Object handleFileUpload(@RequestParam("image") MultipartFile file) throws IOException, GeneralSecurityException {
+    @PostMapping("/upload")
+    public Object handleFileUpload(@RequestParam("file") MultipartFile file) throws IOException, GeneralSecurityException {
         if (file.isEmpty()) {
             return "FIle is empty";
         }
