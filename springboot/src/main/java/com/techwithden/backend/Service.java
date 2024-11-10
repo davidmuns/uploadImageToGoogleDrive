@@ -8,6 +8,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.Permission;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,9 +55,17 @@ public class Service {
             com.google.api.services.drive.model.File uploadedFile = drive.files().create(fileMetaData, mediaContent)
                     .setFields("id").execute();
 
+            // Configurar el archivo para ser público
+            Permission permission = new Permission();
+            permission.setType("anyone");
+            permission.setRole("reader");
+            drive.permissions().create(uploadedFile.getId(), permission).execute();
+
             // Crear URL de visualización del archivo
-            String imageUrl = "https://drive.google.com/uc?export=view&id="+uploadedFile.getId();
+            String imageUrl = "https://drive.google.com/uc?export=view&id=" + uploadedFile.getId();
+            String imageUrl2 = "https://drive.google.com/file/d/" + uploadedFile.getId() + "/preview";
             System.out.println("IMAGE URL: " + imageUrl);
+            System.out.println("IMAGE URL 2: " + imageUrl2);
 
             // Eliminar archivo local después de la carga
             file.delete();
@@ -64,7 +73,7 @@ public class Service {
             // Configurar respuesta
             res.setStatus(200);
             res.setMessage("Image Successfully Uploaded To Drive");
-            res.setUrl(imageUrl);
+            res.setUrl(imageUrl2);
         }catch (Exception e){
             System.out.println(e.getMessage());
             res.setStatus(500);
