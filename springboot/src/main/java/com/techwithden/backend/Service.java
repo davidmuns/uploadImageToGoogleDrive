@@ -12,6 +12,7 @@ import com.google.api.services.drive.DriveScopes;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
@@ -35,15 +36,32 @@ public class Service {
         try{
             String folderId = "1aoJTm7jtUnJLGkR3oPLegLcf4uEPyb6x";
             Drive drive = createDriveService();
+
+            // Configurar metadata del archivo para Drive
             com.google.api.services.drive.model.File fileMetaData = new com.google.api.services.drive.model.File();
             fileMetaData.setName(file.getName());
             fileMetaData.setParents(Collections.singletonList(folderId));
-            FileContent mediaContent = new FileContent("image/jpeg", file);
+
+            // Detectar el tipo MIME del archivo
+            String mimeType = Files.probeContentType(file.toPath());
+            if (mimeType == null) {
+                mimeType = "application/octet-stream"; // Tipo MIME genérico si no se detecta
+            }
+            // Crear FileContent con el tipo MIME detectado
+            FileContent mediaContent = new FileContent(mimeType, file);
+
+            // Subir archivo a Google Drive
             com.google.api.services.drive.model.File uploadedFile = drive.files().create(fileMetaData, mediaContent)
                     .setFields("id").execute();
+
+            // Crear URL de visualización del archivo
             String imageUrl = "https://drive.google.com/uc?export=view&id="+uploadedFile.getId();
             System.out.println("IMAGE URL: " + imageUrl);
+
+            // Eliminar archivo local después de la carga
             file.delete();
+
+            // Configurar respuesta
             res.setStatus(200);
             res.setMessage("Image Successfully Uploaded To Drive");
             res.setUrl(imageUrl);
